@@ -43,9 +43,10 @@
 
       peer.on('open', id => {
         console.log('Created Room with ID:', id);
-        getMedia();
-        peer.on('call', call => {
-          call.answer(localStream);
+        getMedia().then(() => {
+          peer.on('call', call => {
+            call.answer(localStream);
+          });
         });
       });
     }
@@ -56,7 +57,8 @@
 
       peer.on('open', id => {
         console.log('Joining Room:', roomId);
-        const call = peer.call(roomId, null);
+        const call = peer.call(roomId, undefined);
+
         call.on('stream', remoteStream => {
           document.getElementById('remoteVideo').srcObject = remoteStream;
         });
