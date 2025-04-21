@@ -1,0 +1,66 @@
+<!DOCTYPE html><html>
+<head>
+  <title>Remote Camera Viewer (WebRTC)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    video {
+      width: 100%;
+      max-width: 600px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Remote Camera Sharing (WebRTC)</h2>
+  <input type="text" id="roomId" placeholder="Enter Room ID" />
+  <button onclick="createRoom()">Create Room</button>
+  <button onclick="joinRoom()">Join Room</button>
+  <br>
+  <video id="localVideo" autoplay muted playsinline></video>
+  <video id="remoteVideo" autoplay playsinline></video>  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>  <script>
+    let localStream;
+    let peer;
+
+    async function getMedia() {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      document.getElementById('localVideo').srcObject = localStream;
+    }
+
+    function createRoom() {
+      const roomId = document.getElementById('roomId').value;
+      peer = new Peer(roomId);
+
+      peer.on('open', id => {
+        console.log('Created Room with ID:', id);
+        getMedia();
+        peer.on('call', call => {
+          call.answer(localStream);
+        });
+      });
+    }
+
+    function joinRoom() {
+      const roomId = document.getElementById('roomId').value;
+      peer = new Peer();
+
+      peer.on('open', id => {
+        console.log('Joining Room:', roomId);
+        const call = peer.call(roomId, null);
+        call.on('stream', remoteStream => {
+          document.getElementById('remoteVideo').srcObject = remoteStream;
+        });
+      });
+    }
+  </script></body>
+</html>
